@@ -70,6 +70,12 @@ in
   # ];
 
   # xdg link handling (helps appflowy login to work)
+  # ON REBUILD YOU MUST REMOVE OLD MIMEAPPS LIST!! (found in .config file)
+  # hm will backup on rebuild so dont worry (too much)
+  # run these commands to fix:
+  # cd ~/.config
+  # rm -rf mimeapps.list
+
   xdg.mimeApps.enable = true;
   xdg.mimeApps.defaultApplications = {
     "x-scheme-handler/appflowy" = "appflowy.desktop";
