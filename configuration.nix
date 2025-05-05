@@ -44,6 +44,10 @@
   networking.wireless.enable = false;  # wpa_supplicant
   # networking.wireless.userControlled.enable = true; # other networking option, prob dont use
   networking.networkmanager.enable = true;  # network manager
+  programs.localsend = {
+    enable = true;
+    openFirewall = true;
+  };
 
    # time zone and locale
    time.timeZone = "America/Denver";
@@ -112,6 +116,7 @@
 
   # my home-manager set up
   home-manager = {
+    backupFileExtension = "backup";
     extraSpecialArgs = { inherit inputs; };
     users = {
      "olive" = import ./home.nix;

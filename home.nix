@@ -11,7 +11,7 @@ in
   home.homeDirectory = "/home/olive";
   home.stateVersion = "24.05"; # DO NOT CHANGE VALUE!!!
   
-    nixpkgs.config.allowUnfree = true;  
+  nixpkgs.config.allowUnfree = true;  
 
   home.packages = [
     # my favorite packages
@@ -24,6 +24,7 @@ in
     pkgs.ytermusic # tui music thing
     pkgs.zoom-us #zoom
     pkgs.signal-desktop # signal
+    pkgs.appflowy #notion alternative
 
     # gnome apps
     pkgs.gnome-tweaks # gnome tweaks
@@ -39,21 +40,57 @@ in
   
     # fonts
     pkgs.fantasque-sans-mono
-  ];
+
+    # bash script for theme switching - default
+    (lib.lowPrio (pkgs.writeShellApplication {
+      name = "toggle-theme";
+      runtimeInputs = with pkgs; [ home-manager coreutils ripgrep ];
+      text =
+      ''
+        "$(home-manager generations | head -1 | rg -o '/[^ ]*')"/specialisation/light/activate
+      '';
+    }))
+   ];
+
+   # bash script for theme switching - light 
+   specialisation.light.configuration = {
+    home.packages = [
+    (pkgs.writeShellApplication {
+      name = "toggle-theme";
+      runtimeInputs = with pkgs; [ home-manager coreutils ripgrep ];
+      text =
+        ''
+          "$(home-manager generations | head -2 | tail -1 | rg -o '/[^ ]*')"/activate
+        '';
+    })];};
 
   # use this for some weird broken youtube music package
   # nixpkgs.config.permittedInsecurePackages = [
   #   "python3.12-youtube-dl-2021.12.17"
   # ];
 
-  # fonts
-  fonts.fontconfig.enable = true;
+  # xdg link handling (helps appflowy login to work)
+  xdg.mimeApps.enable = true;
+  xdg.mimeApps.defaultApplications = {
+    "x-scheme-handler/appflowy" = "appflowy.desktop";
+    "x-scheme-handler/appflowy-flutter" = "appflowy.desktop"; 
+  };
 
+  # mimetypes 
+  xdg.desktopEntries.appflowy = {
+    name = "AppFlowy";
+    exec = "${pkgs.appflowy}/bin/appflowy %u";
+    type = "Application";
+    terminal = false;
+    mimeType = [ "x-scheme-handler/appflowy" "x-scheme-handler/appflowy-flutter"];
+  };
+
+  # fonts
+  fonts.fontconfig.enable = true;  
 
   home.file = {
    # Not using to manage dots rn (I dont really have any dots to manage)
   };
-
 
   # GTK/Gnome Theming (Gruvbox)
   # Need to figure out how to use nix args (???) to enable light/dark user themes at change of toggle   
@@ -69,7 +106,7 @@ in
         colorVariants = ["dark" "light"];
  	themeVariants = ["green"];};
         name = "Gruvbox-Green-Dark";
-   };
+        };
 
    cursorTheme = {
       package = pkgs.capitaine-cursors-themed;
@@ -84,12 +121,18 @@ in
    };
   };
 
-
   # Gnome extensions
   dconf = {
     enable = true;
     settings = {
-      "org/gnome/shell" = {
+      "org/gnome/desktop/interface" = {
+        "color-scheme" = "prefer-dark";
+        "gtk-theme" = "Gruvbox-Green-Dark";
+      };
+      "org/gnome/shell/extensions/user-theme" = { 
+          name = "Gruvbox-Green-Dark";
+       };
+      "org/gnome/shell" = { 
         disable-user-extensions = false;
         enabled-extensions = with pkgs.gnomeExtensions; [
           blur-my-shell.extensionUuid
@@ -113,6 +156,22 @@ in
   home.sessionVariables = {
     EDITOR = "nano"; # eww i know but im too busy to learn vim rn
     BROWSER = "zen-browser";
+  };
+
+
+  # light theme
+  specialisation.light.configuration = {
+      gtk.theme.name = lib.mkForce "Gruvbox-Green-Light";
+ 
+      dconf.settings = {
+        "org/gnome/desktop/interface" = {
+          "color-scheme" = lib.mkForce "prefer-light";
+          "gtk-theme" = lib.mkForce "Gruvbox-Green-Light";
+        };
+        "org/gnome/shell/extensions/user-theme" = {
+           name =  lib.mkForce "Gruvbox-Green-Light";
+        };
+      };
   };
 
 
