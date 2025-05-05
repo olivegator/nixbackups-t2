@@ -44,7 +44,9 @@
   networking.wireless.enable = false;  # wpa_supplicant
   # networking.wireless.userControlled.enable = true; # other networking option, prob dont use
   networking.networkmanager.enable = true;  # network manager
-  programs.localsend = {
+ 
+ # local send firewall port settings/program
+ programs.localsend = {
     enable = true;
     openFirewall = true;
   };
